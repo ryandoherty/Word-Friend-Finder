@@ -3,6 +3,8 @@ var friends = {};
 var numbWords = 0;
 var depth = 0;
 var friendCount = 0;
+var alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+testWord = '';
 
 console = {
     'log' : function(data) {
@@ -15,16 +17,15 @@ self.addEventListener('message', function(event) {
     if(event.data.word) {
         //do a search!
         var start = Date.now();
+        findFriends(event.data.word);
+        var end = Date.now();
+        var elapsed = end - start;
+        postMessage({'type':'answer', 'elapsed':elapsed, 'friendCount':friendCount});
 
+        //Clear everything after or Firefox takes up lots of memory
         friends = {};
         depth = 0;
         friendCount = 0;
-        findFriends(event.data.word);
-
-        var end = Date.now();
-        var elapsed = end - start;
-        console.log(friendCount);
-        console.log('time: '+elapsed);
     }
 
     if(event.data.wordList) {
@@ -33,18 +34,42 @@ self.addEventListener('message', function(event) {
     }
 }, false);
 
+function testWords(word, word2) {
+    if(words[word2] == true && !friends[word2] && lDistance(word, word2) ==1) {
+        //found a friend
+        friendCount++;
+        friends[word2] = true;
+        findFriends(word2);
+    }
+}
+
 function findFriends(word) {
     depth++;
-    for(var i=0; i<numbWords; i++) {
-        var testWord = words[i];
-        if(lDistance(word, testWord) == 1) {
 
-            if(!friends[testWord]) {
-                friends[testWord] = true;
-                friendCount++;
-                findFriends(testWord);
-            }
+    //Generate all permutations of the word, test to see if they are in the dictionary and distance of 1
+    for(var i=0; i<word.length; i++) {
+        for(var k=0; k<alphabet.length; k++) {
+            testWord = word.replaceAt(i, alphabet[k]);
+            testWords(word, testWord);
         }
+    }
+
+
+    for(var k=0; k<alphabet.length; k++) {
+        testWord = word+alphabet[k];
+        testWords(word, testWord);
+        if(words[testWord] == true && !friends[testWord] && lDistance(word, testWord) ==1) {
+            //found a friend
+            friendCount++;
+            friends[testWord] = true;
+            findFriends(testWord);
+        }
+    }
+
+
+    for(var k=0; k<alphabet.length; k++) {
+        testWord = alphabet[k]+word;
+        testWords(word, testWord);
     }
 }
 
@@ -88,4 +113,8 @@ minimator = function(x,y,z) {
     if (x < y && x < z) return x;
     if (y < x && y < z) return y;
     return z;
+}
+
+String.prototype.replaceAt = function(index, c) {
+    return this.substr(0, index) + c + this.substr(index + (c.length == 0 ? 1 : c.length));
 }

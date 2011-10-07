@@ -3,3 +3,7 @@ body {
     margin: auto;
     padding: 10px 0;
 }
+
+#working {
+    display: none;
+}
