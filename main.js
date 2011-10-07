@@ -11,11 +11,14 @@ function FriendFinder(options) {
     this.worker.addEventListener('message', $.proxy(this.receiveMessage, this), false);
     this.stop = $(this.stop);
     this.stop.click($.proxy(this.stopSearch, this));    
+    this.working = $(this.working);
     
     $.ajax('words.txt', {'success':$.proxy(this.buildWordList, this)});
 };
 
 FriendFinder.prototype.stopSearch = function(event) {
+    this.working.hide();
+    this.stop.hide(); 
     this.worker.terminate();
     delete this.worker;
     this.worker = new Worker('worker.js'); 
@@ -37,9 +40,11 @@ FriendFinder.prototype.buildWordList = function(data) {
 
 FriendFinder.prototype.findFriends = function(event) {
     if(this.searching) {
-        
+        this.stopSearch();    
     }
-    $("#working").show();
+
+    this.working.show();
+    this.stop.show();
     this.word = this.form.find(this.wordInput).val(); 
     this.worker.postMessage({'word':this.word});
     return false;
@@ -50,12 +55,27 @@ FriendFinder.prototype.receiveMessage = function(event) {
     if(event.data.type == 'log') {
         console.log(event.data.data);
     } else if(event.data.type == 'answer') {
-        $("#working").hide();
+        this.working.hide();
+        this.stop.hide();
         var seconds = event.data.elapsed/1000;
-        $("#answer").html('Found '+event.data.friendCount+' friends in '+seconds+' seconds');
+        $("#answer").html('Found '+addCommas(event.data.friendCount)+' friends in '+seconds+' seconds');
     }
 };
 
+//Taken from http://www.mredkj.com/javascript/numberFormat.html
+function addCommas(nStr)
+{
+    nStr += '';
+    x = nStr.split('.');
+    x1 = x[0];
+    x2 = x.length > 1 ? '.' + x[1] : '';
+    var rgx = /(\d+)(\d{3})/;
+    while (rgx.test(x1)) {
+        x1 = x1.replace(rgx, '$1' + ',' + '$2');
+    }
+    return x1 + x2;
+}
+
 $(function() {
-    var finder = new FriendFinder({"form":"form", "stop":"#stop", "wordInput":"input[name='word']"});
+    var finder = new FriendFinder({"form":"form", "working":"#working", "stop":"#stop", "wordInput":"input[name='word']"});
 });

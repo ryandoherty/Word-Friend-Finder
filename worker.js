@@ -1,12 +1,11 @@
 var words = false;
 var friends = {};
 var numbWords = 0;
-var depth = 0;
 var friendCount = 0;
 var alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
-testWord = '';
+var testWord = '';
 
-console = {
+var console = {
     'log' : function(data) {
             postMessage({'type':'log', 'data':data});
     }
@@ -44,7 +43,6 @@ function testWords(word, word2) {
 }
 
 function findFriends(word) {
-    depth++;
 
     //Generate all permutations of the word, test to see if they are in the dictionary and distance of 1
     for(var i=0; i<word.length; i++) {
@@ -74,7 +72,7 @@ function findFriends(word) {
 }
 
 //Code stolen from http://andrew.hedges.name/experiments/levenshtein/levenshtein.js
-lDistance = function(word1, word2) {
+var lDistance = function(word1, word2) {
     var cost;
 
     // get values
@@ -109,7 +107,7 @@ lDistance = function(word1, word2) {
 }
 
 // return the smallest of the three values passed in
-minimator = function(x,y,z) {
+var minimator = function(x,y,z) {
     if (x < y && x < z) return x;
     if (y < x && y < z) return y;
     return z;
