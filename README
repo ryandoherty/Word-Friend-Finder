@@ -1,0 +1,5 @@
+Word Friend Finder!
+
+Calculates social network size of words in dictionary that have a Levenshtein distance of 1.
+
+Usage: enter a word, click 'Find friends', wait. Profit!
