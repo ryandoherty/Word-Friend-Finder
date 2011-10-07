@@ -7,8 +7,6 @@ function FriendFinder(options) {
     this.form.submit($.proxy(this.findFriends, this));
     this.searching = false;
     this.word = '';
-    this.worker = new Worker('worker.js');
-    this.worker.addEventListener('message', $.proxy(this.receiveMessage, this), false);
     this.stop = $(this.stop);
     this.stop.click($.proxy(this.stopSearch, this));    
     this.working = $(this.working);
@@ -16,26 +14,29 @@ function FriendFinder(options) {
     $.ajax('words.txt', {'success':$.proxy(this.buildWordList, this)});
 };
 
+FriendFinder.prototype.createWorker = function() {
+    this.worker = new Worker('worker.js'); 
+    this.worker.addEventListener('message', $.proxy(this.receiveMessage, this), false);
+    this.worker.postMessage({'wordList':this.wordList});
+}
+
 FriendFinder.prototype.stopSearch = function(event) {
     this.working.hide();
     this.stop.hide(); 
     this.worker.terminate();
     delete this.worker;
-    this.worker = new Worker('worker.js'); 
-    this.worker.addEventListener('message', $.proxy(this.receiveMessage, this), false);
-    this.worker.postMessage({'wordList':this.words});
     return false;
 }
 
 FriendFinder.prototype.buildWordList = function(data) {
     this.words = data.split(/\r\n|\r|\n/);
-    var wordList = {};
+    this.wordList = {};
 
     for(var i=0; i<this.words.length; i++) {
-        wordList[this.words[i]] = true;
+        this.wordList[this.words[i]] = true;
     }
-
-    this.worker.postMessage({'wordList':wordList});
+    
+    this.createWorker();
 };
 
 FriendFinder.prototype.findFriends = function(event) {

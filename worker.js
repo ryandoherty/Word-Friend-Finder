@@ -1,6 +1,5 @@
 var words = false;
 var friends = {};
-var numbWords = 0;
 var friendCount = 0;
 var alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
 var testWord = '';
@@ -19,6 +18,7 @@ self.addEventListener('message', function(event) {
         findFriends(event.data.word);
         var end = Date.now();
         var elapsed = end - start;
+
         postMessage({'type':'answer', 'elapsed':elapsed, 'friendCount':friendCount});
 
         //Clear everything after or Firefox takes up lots of memory
@@ -29,7 +29,6 @@ self.addEventListener('message', function(event) {
 
     if(event.data.wordList) {
         words = event.data.wordList;
-        numbWords = words.length;
     }
 }, false);
 
@@ -52,18 +51,10 @@ function findFriends(word) {
         }
     }
 
-
     for(var k=0; k<alphabet.length; k++) {
         testWord = word+alphabet[k];
         testWords(word, testWord);
-        if(words[testWord] == true && !friends[testWord] && lDistance(word, testWord) ==1) {
-            //found a friend
-            friendCount++;
-            friends[testWord] = true;
-            findFriends(testWord);
-        }
     }
-
 
     for(var k=0; k<alphabet.length; k++) {
         testWord = alphabet[k]+word;
@@ -71,7 +62,7 @@ function findFriends(word) {
     }
 }
 
-//Code stolen from http://andrew.hedges.name/experiments/levenshtein/levenshtein.js
+//Code taken from http://andrew.hedges.name/experiments/levenshtein/levenshtein.js
 var lDistance = function(word1, word2) {
     var cost;
 
